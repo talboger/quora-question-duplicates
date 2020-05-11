@@ -19,17 +19,32 @@ def train_valid_test_split(df, train_perc=.5, valid_perc=.25, seed=0):
     # params: train_perc, valid_perc: percent of data to assign to train and validation splits
     # param: seed (set at 0 just for consistent replication; only determines the numpy random
     # no return values; saves train, valid, test csv
+
+    df_clean = df.copy()
+    q1_split, q1_full = df_split(df_clean, 'question1')
+    q2_split, q2_full = df_split(df_clean, 'question2')
+    # this limits our question length to 50. it's important for simplicity in the torchtext field later on
+    drop_list = []
+    for i in range(len(q1_split)):
+        if len(q1_split[i]) > 50:
+            drop_list.append(i)
+        elif len(q2_split[i]) > 50:
+            drop_list.append(i)
+    df_clean = df_clean.drop(drop_list).reset_index(drop=True)
+    drop_num, total = len(drop_list), len(df)
+    print(f"Dropped {drop_num:.0f} rows out of {total:.0f} total")  # dropped only 906/404290 rows, or 0.22%
+
     np.random.seed(seed)
-    perm = np.random.permutation(df.index)
-    n = len(df.index)
-    df[['question1', 'question2']] = df[['question1', 'question2']].astype(str)
-    df['question1'] = df['question1'].apply(remove_punctuation)
-    df['question2'] = df['question2'].apply(remove_punctuation)
+    perm = np.random.permutation(df_clean.index)
+    n = len(df_clean.index)
+    df_clean[['question1', 'question2']] = df_clean[['question1', 'question2']].astype(str)
+    df_clean['question1'] = df_clean['question1'].apply(remove_punctuation)
+    df_clean['question2'] = df_clean['question2'].apply(remove_punctuation)
     train_end = int(train_perc * n)
     valid_end = int(valid_perc * n) + train_end
-    train = df.iloc[perm[:train_end]]
-    valid = df.iloc[perm[train_end:valid_end]]
-    test = df.iloc[perm[valid_end:]]
+    train = df_clean.iloc[perm[:train_end]]
+    valid = df_clean.iloc[perm[train_end:valid_end]]
+    test = df_clean.iloc[perm[valid_end:]]
     for i, j in zip([train, valid, test], ["train", "valid", "test"]):
         i.reset_index(drop=True).to_csv('data/' + j + '.csv', index=False)
 
@@ -84,7 +99,7 @@ def prep_torch_data(batch_size):
     # param: batch_size: desired batch_size of bucket iterator
     # return: iterators, torchtext fields
     tokenize = lambda x: x.split()
-    TEXT = tt.Field(sequential=True, tokenize=tokenize, lower=True)
+    TEXT = tt.Field(sequential=True, tokenize=tokenize, lower=True, fix_length=50)
     LABEL = tt.Field(sequential=False, use_vocab=False)
 
     fields = [("id", None), ("qid1", None), ("qid2", None),
