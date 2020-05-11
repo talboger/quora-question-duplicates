@@ -106,13 +106,10 @@ def prep_torch_data(batch_size):
               ("question1", TEXT), ("question2", TEXT),
               ("is_duplicate", LABEL)]
 
-    train, valid = tt.TabularDataset.splits(path="data",
-                                            train="train.csv", validation="valid.csv",
-                                            format="csv", skip_header=True,
-                                            fields=fields)
-    test = tt.TabularDataset.splits(path="data/test.csv",
-                                    format="csv", skip_header=True,
-                                    fields=fields)
+    train, valid, test = tt.TabularDataset.splits(path="data",
+                                                  train="train.csv", validation="valid.csv", test="test.csv",
+                                                  format="csv", skip_header=True,
+                                                  fields=fields)
 
     TEXT.build_vocab(train, valid, test)
     train_iter, val_iter, test_iter = tt.BucketIterator.splits((train, valid, test),
