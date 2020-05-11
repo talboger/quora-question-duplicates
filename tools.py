@@ -1,10 +1,13 @@
 import numpy as np
 import string
 from nltk.corpus import stopwords
+import torchtext.data as tt
 
 
 def remove_punctuation(q):
-    # remove punctuation of string (important for consistency in cos sim function) - used in .apply
+    # remove punctuation of string (important for consistency in cos sim function)
+    # no params; only used in df.apply(remove_punctuation)
+    # returns desired section of df without punctuation
     q = ''.join([i for i in q if i not in frozenset(string.punctuation)])
     return q
 
@@ -12,6 +15,10 @@ def remove_punctuation(q):
 def train_valid_test_split(df, train_perc=.5, valid_perc=.25, seed=0):
     # this is not used in any other file. this is how i separated the main file into train/valid/test files
     # to make the separation for yourself, load the df then call train_valid_test_split(df)
+    # param: df: the dataframe to split
+    # params: train_perc, valid_perc: percent of data to assign to train and validation splits
+    # param: seed (set at 0 just for consistent replication; only determines the numpy random
+    # no return values; saves train, valid, test csv
     np.random.seed(seed)
     perm = np.random.permutation(df.index)
     n = len(df.index)
@@ -29,6 +36,9 @@ def train_valid_test_split(df, train_perc=.5, valid_perc=.25, seed=0):
 
 def df_split(df, col):
     # clean column of sentences in df into list of tokenized words
+    # param: df, col: desired dataframe and column to clean
+    # return: tuple: first return value: list of the tokenized column (lowercase and w/o punctuation)
+    # return: tuple: second return value: pd.Series of the non-tokenized but cleaned sentences (used for len_diff)
     df[col] = df[col].astype(str)
     no_punc = df[col].apply(remove_punctuation)
     return [word.lower().split() for word in no_punc.tolist()], no_punc
@@ -36,6 +46,8 @@ def df_split(df, col):
 
 def cos_sim(l1, l2):
     # calculate cosine similarity between two lists of words
+    # param: l1, l2: 2 lists of tokens
+    # return: cos_list, a list giving the pairwise cosine similarity between each sentence in l1 and l2
 
     # define stop words, or words that aren't relevant to the "meaning" of a question
     # examples of stopwords include "the", "a", etc.
@@ -65,3 +77,31 @@ def cos_sim(l1, l2):
         cos = np.dot(l1_tokens[i], l2_tokens[i]) / (np.linalg.norm(l1_tokens[i]) * np.linalg.norm(l2_tokens[i]))
         cos_list.append(cos if not np.isnan(cos) else 0)  # adjusts for vectors of norm 0
     return cos_list
+
+
+def prep_torch_data(batch_size):
+    # creates torchtext fields and iterators of train, valid, and test csvs
+    # param: batch_size: desired batch_size of bucket iterator
+    # return: iterators, torchtext fields
+    tokenize = lambda x: x.split()
+    TEXT = tt.Field(sequential=True, tokenize=tokenize, lower=True)
+    LABEL = tt.Field(sequential=False, use_vocab=False)
+
+    fields = [("id", None), ("qid1", None), ("qid2", None),
+              ("question1", TEXT), ("question2", TEXT),
+              ("is_duplicate", LABEL)]
+
+    train, valid = tt.TabularDataset.splits(path="data",
+                                            train="train.csv", validation="valid.csv",
+                                            format="csv", skip_header=True,
+                                            fields=fields)
+    test = tt.TabularDataset.splits(path="data/test.csv",
+                                    format="csv", skip_header=True,
+                                    fields=fields)
+
+    TEXT.build_vocab(train, valid, test)
+    train_iter, val_iter, test_iter = tt.BucketIterator.splits((train, valid, test),
+                                                               batch_size=batch_size,
+                                                               sort_key=lambda x: len(x.question1))
+
+    return train_iter, val_iter, test_iter, TEXT, LABEL
