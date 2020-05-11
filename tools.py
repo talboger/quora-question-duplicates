@@ -9,6 +9,24 @@ def remove_punctuation(q):
     return q
 
 
+def train_valid_test_split(df, train_perc=.5, valid_perc=.25, seed=0):
+    # this is not used in any other file. this is how i separated the main file into train/valid/test files
+    # to make the separation for yourself, load the df then call train_valid_test_split(df)
+    np.random.seed(seed)
+    perm = np.random.permutation(df.index)
+    n = len(df.index)
+    df[['question1', 'question2']] = df[['question1', 'question2']].astype(str)
+    df['question1'] = df['question1'].apply(remove_punctuation)
+    df['question2'] = df['question2'].apply(remove_punctuation)
+    train_end = int(train_perc * n)
+    valid_end = int(valid_perc * n) + train_end
+    train = df.iloc[perm[:train_end]]
+    valid = df.iloc[perm[train_end:valid_end]]
+    test = df.iloc[perm[valid_end:]]
+    for i, j in zip([train, valid, test], ["train", "valid", "test"]):
+        i.reset_index(drop=True).to_csv('data/' + j + '.csv', index=False)
+
+
 def df_split(df, col):
     # clean column of sentences in df into list of tokenized words
     df[col] = df[col].astype(str)
@@ -47,18 +65,3 @@ def cos_sim(l1, l2):
         cos = np.dot(l1_tokens[i], l2_tokens[i]) / (np.linalg.norm(l1_tokens[i]) * np.linalg.norm(l2_tokens[i]))
         cos_list.append(cos if not np.isnan(cos) else 0)  # adjusts for vectors of norm 0
     return cos_list
-
-
-def train_valid_test_split(df, train_perc=.5, valid_perc=.25, seed=0):
-    # this is not used in any other file. this is how i separated the main file into train/valid/test files
-    # to make the separation for yourself, load the df then call train_valid_test_split(df)
-    np.random.seed(seed)
-    perm = np.random.permutation(df.index)
-    n = len(df.index)
-    train_end = int(train_perc * n)
-    valid_end = int(valid_perc * n) + train_end
-    train = df.iloc[perm[:train_end]]
-    valid = df.iloc[perm[train_end:valid_end]]
-    test = df.iloc[perm[valid_end:]]
-    for i, j in zip([train, valid, test], ["train", "valid", "test"]):
-        i.reset_index(drop=True).to_csv('data/' + j + '.csv', index=False)
