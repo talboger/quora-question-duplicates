@@ -1,0 +1,62 @@
+Epoch: 01 | Time: 0m 26s
+	Train Loss: 0.720
+	 Val. Loss: 0.718 | Val. Accuracy 50.134
+Saving model
+Epoch: 02 | Time: 0m 25s
+	Train Loss: 0.716
+	 Val. Loss: 0.721 | Val. Accuracy 48.987
+EarlyStopping counter: 1 out of 5
+Epoch: 03 | Time: 0m 23s
+	Train Loss: 0.715
+	 Val. Loss: 0.715 | Val. Accuracy 50.502
+Saving model
+Epoch: 04 | Time: 0m 23s
+	Train Loss: 0.714
+	 Val. Loss: 0.714 | Val. Accuracy 50.690
+Saving model
+Epoch: 05 | Time: 0m 23s
+	Train Loss: 0.713
+	 Val. Loss: 0.714 | Val. Accuracy 50.483
+EarlyStopping counter: 1 out of 5
+Epoch: 06 | Time: 0m 23s
+	Train Loss: 0.713
+	 Val. Loss: 0.718 | Val. Accuracy 49.419
+EarlyStopping counter: 2 out of 5
+Epoch: 07 | Time: 0m 31s
+	Train Loss: 0.713
+	 Val. Loss: 0.713 | Val. Accuracy 50.751
+Saving model
+Epoch: 08 | Time: 0m 23s
+	Train Loss: 0.712
+	 Val. Loss: 0.714 | Val. Accuracy 50.603
+EarlyStopping counter: 1 out of 5
+Epoch: 09 | Time: 0m 23s
+	Train Loss: 0.712
+	 Val. Loss: 0.714 | Val. Accuracy 50.318
+EarlyStopping counter: 2 out of 5
+Epoch: 10 | Time: 0m 23s
+	Train Loss: 0.712
+	 Val. Loss: 0.713 | Val. Accuracy 50.839
+Saving model
+Epoch: 11 | Time: 0m 23s
+	Train Loss: 0.712
+	 Val. Loss: 0.715 | Val. Accuracy 50.452
+EarlyStopping counter: 1 out of 5
+Epoch: 12 | Time: 0m 23s
+	Train Loss: 0.712
+	 Val. Loss: 0.713 | Val. Accuracy 50.687
+EarlyStopping counter: 2 out of 5
+Epoch: 13 | Time: 0m 23s
+	Train Loss: 0.712
+	 Val. Loss: 0.713 | Val. Accuracy 50.714
+EarlyStopping counter: 3 out of 5
+Epoch: 14 | Time: 0m 26s
+	Train Loss: 0.712
+	 Val. Loss: 0.713 | Val. Accuracy 50.656
+EarlyStopping counter: 4 out of 5
+Epoch: 15 | Time: 0m 31s
+	Train Loss: 0.712
+	 Val. Loss: 0.718 | Val. Accuracy 49.455
+EarlyStopping counter: 5 out of 5
+Early stopping, reloading checkpoint model
+Test Loss: 0.713 | Test Accuracy: 50.922
