@@ -78,7 +78,10 @@ if __name__ == "__main__":
     embedding_dim = 64
 
     criterion = nn.BCELoss()
-    model = EmbedCosSim(text_field, embedding_dim)
+    # model = EmbedCosSim(text_field, embedding_dim, use_glove=False, glove_dim=100,
+    #                     checkpoint_name="checkpoints/embed_cos_sim.pt")  # for training model without GloVe
+    model = EmbedCosSim(text_field, embedding_dim, use_glove=True, glove_dim=100,
+                        checkpoint_name='checkpoints/embed_cos_sim_glove.pt')  # for training model with GloVe
     optimizer = optim.Adam(model.parameters())
     # move everything to gpu if available
     device = ("cuda" if torch.cuda.is_available() else "cpu")
@@ -87,4 +90,4 @@ if __name__ == "__main__":
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
     train(model, train_iter, val_iter, test_iter, optimizer, criterion, n_epochs=50, short_train=False,
-          checkpoint_name='checkpoints/embed_cos_sim.pt', patience=10)
+          checkpoint_name=model.checkpoint_name, patience=5)
