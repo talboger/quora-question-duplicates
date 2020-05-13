@@ -24,3 +24,47 @@ class EmbedCosSim(nn.Module):
         out_q1, out_q2 = self.out(embedded_q1), self.out(embedded_q2)
 
         return torch.sigmoid(self.cos(out_q1, out_q2).squeeze(1))
+
+
+class RNNClassifier(nn.Module):
+    def __init__(self, text_field, embedding_dim, hidden_dim, rnn_type, bidir, checkpoint_name):
+        super(RNNClassifier, self).__init__()
+        self.checkpoint_name = checkpoint_name
+        self.text_field = text_field
+        self.vocab_size = len(text_field.vocab)
+        self.embedding_dim = embedding_dim
+        self.hidden_dim = hidden_dim
+        self.bidir = bidir
+        self.rnn_type = rnn_type
+
+        self.embedding = nn.Embedding(self.vocab_size, embedding_dim)
+        if rnn_type == "RNN_TANH":
+            self.rnn = nn.RNN(embedding_dim, hidden_dim, nonlinearity='tanh', bidirectional=bidir)
+        elif rnn_type == "GRU":
+            self.rnn = nn.GRU(embedding_dim, hidden_dim, bidirectional=bidir)
+        elif rnn_type == "LSTM":
+            self.rnn = nn.LSTM(embedding_dim, hidden_dim, bidirectional=bidir)
+        else:
+            raise ValueError("Please choose either RNN_TANH, GRU, or LSTM as RNN type")
+
+        if bidir:
+            self.out = nn.Linear(hidden_dim * 2, 1)
+        else:
+            self.out = nn.Linear(hidden_dim, 1)
+
+    def forward(self, batch):
+        question = torch.cat((batch.question1, batch.question2), dim=0)
+        embedded = self.embedding(question)
+        if self.rnn_type == "LSTM":
+            rnn_out, (hidden, cell) = self.rnn(embedded)
+        else:
+            rnn_out, hidden = self.rnn(embedded)
+
+        if self.bidir:
+            hidden_final = torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1)
+            output = self.out(hidden_final)
+        else:
+            hidden_final = hidden[-1, :, :]
+            output = self.out(hidden_final)
+
+        return torch.sigmoid(output.squeeze(1))

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 from tools import prep_torch_data
-from model import EmbedCosSim
+from model import EmbedCosSim, RNNClassifier
 from early_stopping import EarlyStopping
 
 
@@ -76,12 +76,18 @@ if __name__ == "__main__":
     # load data and define model
     train_iter, val_iter, test_iter, text_field, label_field = prep_torch_data(batch_size=32)
     embedding_dim = 64
+    hidden_dim = 32
 
     criterion = nn.BCELoss()
     # model = EmbedCosSim(text_field, embedding_dim, use_glove=False, glove_dim=100,
     #                     checkpoint_name="checkpoints/embed_cos_sim.pt")  # for training model without GloVe
-    model = EmbedCosSim(text_field, embedding_dim, use_glove=True, glove_dim=100,
-                        checkpoint_name='checkpoints/embed_cos_sim_glove.pt')  # for training model with GloVe
+    # model = EmbedCosSim(text_field, embedding_dim, use_glove=True, glove_dim=100,
+    #                   checkpoint_name='checkpoints/embed_cos_sim_glove.pt')  # for training model with GloVe
+    model = RNNClassifier(text_field, embedding_dim, hidden_dim, rnn_type="GRU", bidir=False,
+                          checkpoint_name='checkpoints/gru.pt')
+    # in the above line, you can change rnn_type to either RNN_TANH, RNN_RELU, or LSTM to create a different network
+    # you can also set bidir=True to create a bidirectional network
+
     optimizer = optim.Adam(model.parameters())
     # move everything to gpu if available
     device = ("cuda" if torch.cuda.is_available() else "cpu")
@@ -89,5 +95,5 @@ if __name__ == "__main__":
         model.cuda()
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
-    train(model, train_iter, val_iter, test_iter, optimizer, criterion, n_epochs=50, short_train=False,
+    train(model, train_iter, val_iter, test_iter, optimizer, criterion, n_epochs=50, short_train=True,
           checkpoint_name=model.checkpoint_name, patience=5)
