@@ -85,7 +85,7 @@ if __name__ == "__main__":
     #                   checkpoint_name='checkpoints/embed_cos_sim_glove.pt')  # for training model with GloVe
     model = RNNClassifier(text_field, embedding_dim, hidden_dim, rnn_type="GRU", bidir=False,
                           checkpoint_name='checkpoints/gru.pt')
-    # in the above line, you can change rnn_type to either RNN_TANH, or LSTM to create a different network
+    # in the above line, you can change rnn_type to either RNN_TANH, GRU, or LSTM to create a different network
     # you can also set bidir=True to create a bidirectional network
 
     optimizer = optim.Adam(model.parameters())
