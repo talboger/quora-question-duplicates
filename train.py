@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 from tools import prep_torch_data
-from model import EmbedCosSim, RNNClassifier
+from model import EmbedCosSim, RNNClassifier, CNNClassifier
 from early_stopping import EarlyStopping
 
 
@@ -83,10 +83,13 @@ if __name__ == "__main__":
     #                     checkpoint_name="checkpoints/embed_cos_sim.pt")  # for training model without GloVe
     # model = EmbedCosSim(text_field, embedding_dim, use_glove=True, glove_dim=100,
     #                   checkpoint_name='checkpoints/embed_cos_sim_glove.pt')  # for training model with GloVe
-    model = RNNClassifier(text_field, embedding_dim, hidden_dim, rnn_type="GRU", bidir=False,
-                          checkpoint_name='checkpoints/gru.pt')
+    # model = RNNClassifier(text_field, embedding_dim, hidden_dim, rnn_type="GRU", bidir=False,
+    #                      checkpoint_name='checkpoints/gru.pt')
     # in the above line, you can change rnn_type to either RNN_TANH, GRU, or LSTM to create a different network
     # you can also set bidir=True to create a bidirectional network
+
+    model = CNNClassifier(text_field, embedding_dim, num_filters=32, filter_sizes=[1, 2, 3, 5],
+                          checkpoint_name='checkpoints/cnn.pt')
 
     optimizer = optim.Adam(model.parameters())
     # move everything to gpu if available
