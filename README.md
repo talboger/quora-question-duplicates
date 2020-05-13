@@ -13,6 +13,7 @@ Evaluating different NLP methods on Quora's question duplicate task
 | GRU (+ bidirectional) | 77.37% |
 | LSTM | 76.52% |
 | LSTM (+ bidirectional) | 76.96% |
+| CNN | 79.83% |
 
 
 \* model checkpoint is too big to push, so none is provided
