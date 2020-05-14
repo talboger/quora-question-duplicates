@@ -3,8 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 from tools import prep_torch_data
-from model import EmbedCosSim, RNNClassifier, CNNClassifier
+from model import EmbedCosSim, RNNClassifier, CNNClassifier, BertClassifier
 from early_stopping import EarlyStopping
+import transformers
 
 
 def epoch_time(start_time, end_time):
@@ -87,9 +88,12 @@ if __name__ == "__main__":
     #                      checkpoint_name='checkpoints/gru.pt')
     # in the above line, you can change rnn_type to either RNN_TANH, GRU, or LSTM to create a different network
     # you can also set bidir=True to create a bidirectional network
-
-    model = CNNClassifier(text_field, embedding_dim, num_filters=32, filter_sizes=[1, 2, 3, 5],
-                          checkpoint_name='checkpoints/cnn.pt')
+    # model = CNNClassifier(text_field, embedding_dim, num_filters=32, filter_sizes=[1, 2, 3, 5],
+    #                      checkpoint_name='checkpoints/cnn.pt')
+    tokenizer = transformers.BertTokenizer.from_pretrained('bert-base-uncased', do_lower=True)
+    bert = transformers.BertModel.from_pretrained('bert-base-uncased')
+    model = BertClassifier(bert,
+                           checkpoint_name='checkpoints/bert.pt')
 
     optimizer = optim.Adam(model.parameters())
     # move everything to gpu if available

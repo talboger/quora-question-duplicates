@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchtext.vocab import GloVe
+import transformers
 
 
 class EmbedCosSim(nn.Module):
@@ -97,4 +98,19 @@ class CNNClassifier(nn.Module):
         conv_out = torch.cat(conv_pool, 1)
 
         output = self.out(conv_out)
+        return torch.sigmoid(output.squeeze(1))
+
+
+class BertClassifier(nn.Module):
+    def __init__(self, bert, checkpoint_name):
+        super(BertClassifier, self).__init__()
+        self.checkpoint_name = checkpoint_name
+        self.bert = bert
+        self.out = nn.Linear(bert.config.hidden_size, 1)
+
+    def forward(self, batch):
+        question = torch.cat((batch.question1, batch.question2), dim=0).permute(1, 0)
+
+        _, pooled_out = self.bert(question)
+        output = self.out(pooled_out)
         return torch.sigmoid(output.squeeze(1))
