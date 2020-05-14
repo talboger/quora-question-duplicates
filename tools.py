@@ -2,6 +2,7 @@ import numpy as np
 import string
 from nltk.corpus import stopwords
 import torchtext.data as tt
+import transformers
 
 
 def remove_punctuation(q):
@@ -94,12 +95,17 @@ def cos_sim(l1, l2):
     return cos_list
 
 
-def prep_torch_data(batch_size):
+def prep_torch_data(batch_size, transformer_tokenize=None):
     # creates torchtext fields and iterators of train, valid, and test csvs
     # param: batch_size: desired batch_size of bucket iterator
     # return: iterators, torchtext fields
-    tokenize = lambda x: x.split()
-    TEXT = tt.Field(sequential=True, tokenize=tokenize, lower=True, fix_length=50)
+    if transformer_tokenize is not None:
+        pad_idx = transformer_tokenize.convert_tokens_to_ids(transformer_tokenize.pad_token)
+        TEXT = tt.Field(use_vocab=False, tokenize=transformer_tokenize.encode, pad_token=pad_idx, fix_length=52)
+    else:
+        tokenize = lambda x: x.split()
+        TEXT = tt.Field(sequential=True, tokenize=tokenize, lower=True, fix_length=50)
+
     LABEL = tt.Field(sequential=False, use_vocab=False)
 
     fields = [("id", None), ("qid1", None), ("qid2", None),
@@ -110,8 +116,8 @@ def prep_torch_data(batch_size):
                                                   train="train.csv", validation="valid.csv", test="test.csv",
                                                   format="csv", skip_header=True,
                                                   fields=fields)
-
-    TEXT.build_vocab(train, valid, test)
+    if transformer_tokenize is not None:
+        TEXT.build_vocab(train, valid, test)
     train_iter, val_iter, test_iter = tt.BucketIterator.splits((train, valid, test),
                                                                batch_size=batch_size,
                                                                sort_key=lambda x: len(x.question1))
