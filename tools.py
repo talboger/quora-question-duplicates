@@ -116,7 +116,7 @@ def prep_torch_data(batch_size, transformer_tokenize=None):
                                                   train="train.csv", validation="valid.csv", test="test.csv",
                                                   format="csv", skip_header=True,
                                                   fields=fields)
-    if transformer_tokenize is not None:
+    if TEXT.use_vocab:
         TEXT.build_vocab(train, valid, test)
     train_iter, val_iter, test_iter = tt.BucketIterator.splits((train, valid, test),
                                                                batch_size=batch_size,

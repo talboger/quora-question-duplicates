@@ -75,7 +75,7 @@ def train(model, train_iter, val_iter, test_iter, optimizer, criterion, n_epochs
 
 if __name__ == "__main__":
     # load data and define model
-    train_iter, val_iter, test_iter, text_field, label_field = prep_torch_data(batch_size=32)
+    # train_iter, val_iter, test_iter, text_field, label_field = prep_torch_data(batch_size=32)
     embedding_dim = 64
     hidden_dim = 32
 
@@ -91,7 +91,11 @@ if __name__ == "__main__":
     # model = CNNClassifier(text_field, embedding_dim, num_filters=32, filter_sizes=[1, 2, 3, 5],
     #                      checkpoint_name='checkpoints/cnn.pt')
     tokenizer = transformers.BertTokenizer.from_pretrained('bert-base-uncased', do_lower=True)
+    train_iter, val_iter, test_iter, text_field, label_field = prep_torch_data(batch_size=32,
+                                                                               transformer_tokenize=tokenizer)
     bert = transformers.BertModel.from_pretrained('bert-base-uncased')
+    for i in bert.parameters():
+        i.requires_grad = False
     model = BertClassifier(bert,
                            checkpoint_name='checkpoints/bert.pt')
 
